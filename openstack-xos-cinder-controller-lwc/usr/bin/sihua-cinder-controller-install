@@ -49,8 +49,8 @@ service cinder-scheduler restart
 rm -f /var/lib/cinder/cinder.sqlite
 
 
-pvcreate /dev/sdb
-vgcreate cinder-volumes /dev/sdb
+pvcreate /dev/vdb
+vgcreate cinder-volumes /dev/vdb
 
 service tgt restart
 service cinder-volume restart
