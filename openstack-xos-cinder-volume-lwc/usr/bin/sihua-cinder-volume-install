@@ -1,0 +1,16 @@
+#!/bin/bash
+ManageEth="eth0"
+ManageIP=$(ifconfig ${ManageEth}|grep "inet addr" |awk '{print $2}'|awk -F: '{print $2}')
+
+pvcreate /dev/sdb
+vgcreate cinder-volumes /dev/sdb
+
+cp /etc/cinder/cinder.conf /etc/cinder/cinder.conf.autoback-$(date +%Y%m%d%H%M%S)
+cp /opt/cinder-volume-install/cinder/cinder-volume.conf /etc/cinder/cinder.conf
+sed -i "s/MIP/$ManageIP/g" /etc/cinder/cinder.conf
+
+service tgt restart
+service cinder-volume restart
+
+echo "service tgt restart" >> /etc/rc.local
+echo "service cinder-volume restart" >> /etc/rc.local

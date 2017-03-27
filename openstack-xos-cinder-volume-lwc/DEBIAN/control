@@ -1,0 +1,8 @@
+Package:sihua-cinder-volume
+Version:1.0.0
+Section:utils
+Priority:optional
+Architecture:all
+Depends: 
+Maintainer:jun.xiao@sihuatech.com
+Description:openstack auto install cinder volume

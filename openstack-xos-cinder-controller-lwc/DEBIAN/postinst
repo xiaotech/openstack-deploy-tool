@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ -f /opt/cinder-controller-install/cinder-controller-installed ] ;then
+	echo 'installed'
+else
+	#controller install 
+	sihua-cinder-controller-install
+        #compute install
+	#sihua-xos-install -i eth0 -r compute
+	touch /opt/cinder-controller-install/cinder-controller-installed
+fi

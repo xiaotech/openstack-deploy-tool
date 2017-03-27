@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ -f /opt/cinder-volume-install/cinder-volume-installed ] ;then
+	echo 'installed'
+else
+	#controller install 
+	sihua-cinder-volume-install
+        #compute install
+	#sihua-xos-install -i eth0 -r compute
+	touch /opt/cinder-volume-install/cinder-volume-installed
+fi

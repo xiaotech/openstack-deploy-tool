@@ -1,0 +1,61 @@
+#!/bin/bash
+
+MysqlUser=root
+MysqlPass=kx123
+
+
+function install_cinder()
+{
+    mysql -u$1 -p$2 -e "create database cinder"
+    mysql -u$1 -p$2 -e "GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'localhost' IDENTIFIED BY 'cinder'";
+    mysql -u$1 -p$2 -e "GRANT ALL PRIVILEGES ON cinder.* TO 'cinder'@'%' IDENTIFIED BY 'cinder'";
+    
+    source /root/admin-openrc.sh
+    
+    openstack service create --name cinder --description "OpenStack Block Storage" volume
+    openstack service create --name cinderv2 --description "OpenStack Block Storage" volumev2
+    openstack endpoint create --region RegionOne volume public http://controller:8776/v1/%\(tenant_id\)s
+    openstack endpoint create --region RegionOne volume internal http://controller:8776/v1/%\(tenant_id\)s
+    openstack endpoint create --region RegionOne volume admin http://controller:8776/v1/%\(tenant_id\)s
+    openstack endpoint create --region RegionOne volumev2 public http://controller:8776/v2/%\(tenant_id\)s
+    openstack endpoint create --region RegionOne volumev2 internal http://controller:8776/v2/%\(tenant_id\)s
+    openstack endpoint create --region RegionOne volumev2 admin http://controller:8776/v2/%\(tenant_id\)s
+    openstack user create --domain default  --password cinder cinder
+    openstack role add --project service --user cinder admin
+    
+    cp /etc/cinder/cinder.conf /etc/cinder/cinder.conf.autoback-$(date +%Y%m%d%H%M%S)
+    cp /opt/cinder-controller-install/cinder/cinder.conf /etc/cinder/cinder.conf
+    su -s /bin/sh -c "cinder-manage db sync" cinder
+    sed -i "s/MIP/$3/g" /etc/cinder/cinder.conf
+}
+
+ManageEth="eth0"
+ManageIP=$(ifconfig ${ManageEth}|grep "inet addr" |awk '{print $2}'|awk -F: '{print $2}')
+
+if [ -z $ManageIP ];then
+    echo "cann't get ip from $ManageEth"
+    exit 1
+fi
+
+install_cinder $MysqlUser $MysqlPass $ManageIP
+
+cp /etc/nova/nova.conf /etc/nova/nova.conf.autoback-$(date +%Y%m%d%H%M%S)
+echo "[cinder]" >>  /etc/nova/nova.conf
+echo "os_region_name = RegionOne" >> /etc/nova/nova.conf
+
+
+service cinder-api restart
+service cinder-scheduler restart
+rm -f /var/lib/cinder/cinder.sqlite
+
+
+pvcreate /dev/sdb
+vgcreate cinder-volumes /dev/sdb
+
+service tgt restart
+service cinder-volume restart
+
+echo "service cinder-api restart" >> /etc/rc.local
+echo "service cinder-scheduler restart" >> /etc/rc.local
+echo "service tgt restart" >> /etc/rc.local
+echo "service cinder-volume restart" >> /etc/rc.local
