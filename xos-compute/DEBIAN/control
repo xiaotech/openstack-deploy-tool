@@ -1,0 +1,8 @@
+Package:sihua-xos-compute-liberty
+Version:1.0.0
+Section:utils
+Priority:optional
+Architecture:all
+Depends: python-neutronclient (>= 1:3.1.0),neutron-server (>= 2:7.0.0),python-novaclient (>= 2:2.30.1),nova-api (>= 2:12.0.0),python-openstackclient(>= 1.7.0-1~cloud0)
+Maintainer:jun.xiao@sihuatech.com
+Description:openstack auto install tools,include nova,neutron

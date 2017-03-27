@@ -1,0 +1,11 @@
+#!/bin/bash
+
+if [ -f /opt/openstack-install/installed ] ;then
+	echo 'installed'
+else
+	#controller install 
+	sihua-xos-install -i eth0 -uroot -pkx123 
+        #compute install
+	#sihua-xos-install -i eth0 -r compute
+	touch /opt/openstack-install/installed
+fi
